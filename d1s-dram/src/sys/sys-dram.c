@@ -1,13 +1,13 @@
 #include <byteorder.h>
+#include <dram.h>
 #include <endian.h>
 #include <io.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include <types.h>
 #include <sys-dram.h>
-#include <dram.h>
+#include <types.h>
 #include <uart.h>
 
 static const struct dram_param param = {
@@ -38,9 +38,9 @@ static const struct dram_param param = {
 };
 
 void sys_dram_init() {
-    sys_uart_printf("DRAM CLK     -> %d", param.dram_clk);
-    sys_uart_printf("DRAM TYPE    -> %d", param.dram_type);
-    sys_uart_printf("DRAM ZQ      -> %x", param.dram_zq);
-    sys_uart_printf("Start Init DRAM...");
-    init_DRAM(0, param); 
+  sys_uart_printf("DRAM CLK     -> %d\r\n", param.dram_clk);
+  sys_uart_printf("DRAM TYPE    -> %d\r\n", param.dram_type);
+  sys_uart_printf("DRAM ZQ      -> %x\r\n", param.dram_zq);
+  sys_uart_printf("Start Init DRAM...\r\n");
+  init_DRAM(0, param);
 }

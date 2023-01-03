@@ -13,19 +13,28 @@
 #include <uart.h>
 
 void show_banner() {
-  sys_uart_printf("    ___                    \r\n");
-  sys_uart_printf("   /   |____  ___  ____ ___ \r\n");
-  sys_uart_printf("  / /| /_  / / _ \\/ __ `__ \\\r\n");
-  sys_uart_printf(" / ___ |/ /_/  __/ / / / / /\r\n");
-  sys_uart_printf("/_/  |_/___/\\___/_/ /_/ /_/ \r\n");
-  sys_uart_printf("=======================================\r\n");
-  sys_uart_printf("Version: %s, Commit: %s\r\n", PROJECT_VER, PROJECT_GIT_HASH);
-  sys_uart_printf("=======================================\r\n");
+  sys_uart_printf("    ____ ________    ____  ____  ___    __  ___\r\n");
+  sys_uart_printf("   / __ <  / ___/   / __ \\/ __ \\/   |  /  |/  /\r\n");
+  sys_uart_printf("  / / / / /\\__ \\   / / / / /_/ / /| | / /|_/ / \r\n");
+  sys_uart_printf(" / /_/ / /___/ /  / /_/ / _, _/ ___ |/ /  / /  \r\n");
+  sys_uart_printf("/_____/_//____/  /_____/_/ |_/_/  |_/_/  /_/   \r\n");
+  sys_uart_printf("======================================================\r\n");
+  sys_uart_printf("YuzukiTsuru <gloomyghost@gloomyghost.com>\r\n");
+  sys_uart_printf("Commit: %x\r\n", PROJECT_GIT_HASH);
+  sys_uart_printf("======================================================\r\n");
 }
 
 int main() {
+  int i = 0;
+
   sys_uart_init();  // init UART0
   sys_clock_init(); // init System Clock
+
   show_banner();    // Show banner
   sys_dram_init();  // init DRAM
+
+  for(i = 0; i < 9; i++){
+    sys_uart_printf("Count: %d \r\n", i);
+    sdelay(100000);
+  }
 }

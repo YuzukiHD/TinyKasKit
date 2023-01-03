@@ -6,8 +6,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <sys-ccu.h>
-#include <types.h>
 #include <sys-clock.h>
+#include <types.h>
 
 static inline uint64_t counter() {
   uint64_t cnt;
