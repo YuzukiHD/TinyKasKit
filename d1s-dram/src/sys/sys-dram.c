@@ -8,6 +8,7 @@
 #include <types.h>
 #include <sys-dram.h>
 #include <dram.h>
+#include <uart.h>
 
 static const struct dram_param param = {
     .dram_clk = 528,
@@ -36,4 +37,10 @@ static const struct dram_param param = {
     .dram_tpr13 = 0x34000000,
 };
 
-void sys_dram_init() { init_DRAM(0, param); }
+void sys_dram_init() {
+    sys_uart_printf("DRAM CLK     -> %d", param.dram_clk);
+    sys_uart_printf("DRAM TYPE    -> %d", param.dram_type);
+    sys_uart_printf("DRAM ZQ      -> %x", param.dram_zq);
+    sys_uart_printf("Start Init DRAM...");
+    init_DRAM(0, param); 
+}
