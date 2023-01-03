@@ -26,6 +26,6 @@ void show_banner() {
 int main() {
   sys_uart_init();  // init UART0
   sys_clock_init(); // init System Clock
-  show_banner();
+  show_banner();    // Show banner
   sys_dram_init();  // init DRAM
 }
