@@ -1,6 +1,16 @@
 #ifndef __D1S_REG_CCU_H__
 #define __D1S_REG_CCU_H__
 
+#include <byteorder.h>
+#include <config.h>
+#include <endian.h>
+#include <io.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+#include <types.h>
+
 #define D1S_CCU_BASE (0x02001000)
 
 #define CCU_PLL_CPU_CTRL_REG (0x000)

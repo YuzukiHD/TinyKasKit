@@ -1,3 +1,78 @@
+#  SPDX-License-Identifier: GPL-2.0+
+#  Allwinner Technology Co., Ltd. <www.allwinnertech.com>
+	.equ	zero, 0
+	.equ	ra, 1
+	.equ	sp, 2
+	.equ	gp, 3
+	.equ	tp, 4
+	.equ	t0, 5
+	.equ	t1, 6
+	.equ	t2, 7
+	.equ	s0, 8
+	.equ	s1, 9
+	.equ	a0, 10
+	.equ	a1, 11
+	.equ	a2, 12
+	.equ	a3, 13
+	.equ	a4, 14
+	.equ	a5, 15
+	.equ	a6, 16
+	.equ	a7, 17
+	.equ	s2, 18
+	.equ	s3, 19
+	.equ	s4, 20
+	.equ	s5, 21
+	.equ	s6, 22
+	.equ	s7, 23
+	.equ	s8, 24
+	.equ	s9, 25
+	.equ	s10, 26
+	.equ	s11, 27
+	.equ	t3, 28
+	.equ	t4, 29
+	.equ	t5, 30
+	.equ	t6, 31
+
+	.macro	extu rd, rs1, imm1, imm2
+	.word	0x0000300b | ((\imm1) << 26) | ((\imm2) << 20) | (\rs1 << 15) | (\rd << 7)
+	.endm
+
+	.macro	ldd rd1, rd2, rs1, imm2, junk
+	.word	0xf800400b | ((\imm2) << 25) | (\rd2 << 20) | (\rs1 << 15) | (\rd1 << 7)
+	.endm
+
+	.macro	lrbu rd, rs1, rs2, imm2
+	.word	0x8000400b | ((\imm2) << 25) | (\rs2 << 20) | (\rs1 << 15) | (\rd << 7)
+	.endm
+
+	.macro	lrw rd, rs1, rs2, imm2
+	.word	0x4000400b | ((\imm2) << 25) | (\rs2 << 20) | (\rs1 << 15) | (\rd << 7)
+	.endm
+
+	.macro	lurw rd, rs1, rs2, imm2
+	.word	0x5000400b | ((\imm2) << 25) | (\rs2 << 20) | (\rs1 << 15) | (\rd << 7)
+	.endm
+
+	.macro	lwd rd1, rd2, rs1, imm2, junk
+	.word	0xe000400b | ((\imm2) << 25) | (\rd2 << 20) | (\rs1 << 15) | (\rd1 << 7)
+	.endm
+
+	.macro	sdd rd1, rd2, rs1, imm2, junk
+	.word	0xf800500b | ((\imm2) << 25) | (\rd2 << 20) | (\rs1 << 15) | (\rd1 << 7)
+	.endm
+
+	.macro	srb rd, rs1, rs2, imm2
+	.word	0x0000500b | ((\imm2) << 25) | (\rs2 << 20) | (\rs1 << 15) | (\rd << 7)
+	.endm
+
+	.macro	srw rd, rs1, rs2, imm2
+	.word	0x4000500b | ((\imm2) << 25) | (\rs2 << 20) | (\rs1 << 15) | (\rd << 7)
+	.endm
+
+	.macro	swia rs2, rs1, imm5, imm2
+	.word	0x5800500b | ((\imm2) << 25) | ((\imm5) << 20) | (\rs1 << 15) | (\rs2 << 7)
+	.endm
+
 	.file	"mctl_hal.c"
 	.option nopic
 	.text
@@ -11644,22 +11719,22 @@ mctl_init:
 	.string	"ZQ calibration error,check external 240 ohm resistor.\r\n"
 	.zero	1
 .LC13:
-	.string	"[AUTO DEBUG] two rank and full DQ!\r\n"
+	.string	"two rank and full DQ!\r\n"
 	.zero	4
 .LC14:
-	.string	"[AUTO DEBUG] single rank and full DQ!\r\n"
+	.string	"single rank and full DQ!\r\n"
 	.zero	1
 .LC15:
-	.string	"[AUTO DEBUG] single rank and half DQ!\r\n"
+	.string	"single rank and half DQ!\r\n"
 	.zero	1
 .LC16:
-	.string	"[AUTO DEBUG] dual rank and half DQ!\r\n"
+	.string	"dual rank and half DQ!\r\n"
 	.zero	3
 .LC17:
-	.string	"DX0 state:%d\r\n"
+	.string	"DX0 state: %d\r\n"
 	.zero	2
 .LC18:
-	.string	"DX1 state:%d\r\n"
+	.string	"DX1 state: %d\r\n"
 	.zero	2
 .LC19:
 	.string	"DRAM simple test FAIL.\r\n"
@@ -11669,15 +11744,15 @@ mctl_init:
 	.string	"DRAM simple test OK.\r\n"
 	.zero	2
 .LC22:
-	.string	"[ERROR DEBUG] DRAM initial error : 0!\r\n"
+	.string	"DRAM initial error : 0!\r\n"
 	.zero	1
 .LC23:
-	.string	"[AUTO DEBUG] rank %d row = %d \r\n"
+	.string	"rank %d row = %d \r\n"
 .LC24:
-	.string	"[AUTO DEBUG] rank %d bank = %d \r\n"
+	.string	"rank %d bank = %d \r\n"
 	.zero	7
 .LC25:
-	.string	"[AUTO DEBUG] rank %d page size = %d KB \r\n"
+	.string	"rank %d page size = %d KB \r\n"
 	.zero	7
 .LC26:
 	.string	"rank1 config same as rank0\r\n"
@@ -11686,12 +11761,12 @@ mctl_init:
 	.string	"rank1 config different from rank0\r\n"
 	.zero	5
 .LC28:
-	.string	"[ERROR DEBUG] auto scan dram rank&width fail !\r\n"
+	.string	"auto scan dram rank&width fail !\r\n"
 .LC29:
-	.string	"[ERROR DEBUG] auto scan dram size fail !\r\n"
+	.string	"auto scan dram size fail !\r\n"
 	.zero	6
 .LC30:
-	.string	"ZQ value = 0x%x***********\r\n"
+	.string	"ZQ value = 0x%x\r\n"
 	.zero	4
 .LC31:
 	.string	"DRAM only have internal ZQ!!\r\n"
@@ -11703,7 +11778,7 @@ mctl_init:
 	.string	"V0.24"
 	.zero	2
 .LC34:
-	.string	"DRAM BOOT DRIVE INFO: %s\r\n"
+	.string	"DRAM BOOT DRIVE INFO: Shipped\r\n"
 	.zero	6
 .LC35:
 	.string	"DRAM CLK = %d MHz\r\n"
@@ -11726,14 +11801,14 @@ mctl_init:
 	.string	"DRAM initial error : 1 !\r\n"
 	.zero	6
 .LC42:
-	.string	"DRAM SIZE =%d M\r\n"
+	.string	"DRAM SIZE = %d M\r\n"
 	.zero	7
 .LC43:
 	.string	"Enable Auto SR\r\n"
 	.text
 .Letext0:
-	.file 3 "/tina-d1/lichee/brandy-2.0/spl/include/asm-generic/int-ll64.h"
-	.file 4 "/tina-d1/lichee/brandy-2.0/tools/toolchain/riscv64-linux-x86_64-20200528/lib/gcc/riscv64-unknown-linux-gnu/8.1.0/include/stddef.h"
+	.file 3 "int-ll64.h"
+	.file 4 "stddef.h"
 	.file 5 "mctl_hal.h"
 	.file 6 "<built-in>"
 	.section	.debug_info,"",@progbits
@@ -36769,7 +36844,7 @@ mctl_init:
 .LASF113:
 	.string	"trtp"
 .LASF148:
-	.string	"/tina-d1/lichee/brandy-2.0/spl/drivers/dram/sun20iw1p1/lib-dram"
+	.string	"lib-dram"
 .LASF41:
 	.string	"dram_para"
 .LASF103:
