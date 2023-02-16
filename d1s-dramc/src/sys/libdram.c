@@ -3,11 +3,11 @@
 #include <endian.h>
 #include <io.h>
 #include <reg-dram.h>
-#include <sys-ccu.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys-ccu.h>
 #include <sys-dram.h>
 #include <types.h>
 #include <uart.h>
@@ -532,7 +532,8 @@ static void mctl_sys_init(dram_param_t *para) {
 
   // turn off sdram clock gate, assert sdram reset
   clrbits_le32((D1S_CCU_BASE + CCU_DRAM_BGR_REG), 0x10001);
-  clrsetbits_le32((D1S_CCU_BASE + CCU_DRAM_CLK_REG), (1 << 31) | (1 << 30), (1 << 27));
+  clrsetbits_le32((D1S_CCU_BASE + CCU_DRAM_CLK_REG), (1 << 31) | (1 << 30),
+                  (1 << 27));
   udelay(10);
 
   // set ddr pll clock
@@ -876,7 +877,8 @@ static unsigned int mctl_channel_init(unsigned int ch_index,
 
   // Check for training error
   if (readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & (1 << 20)) {
-    sys_uart_printf("ZQ calibration error, check external 240 ohm resistor\r\n");
+    sys_uart_printf(
+        "ZQ calibration error, check external 240 ohm resistor\r\n");
     return 0;
   }
 
@@ -1304,8 +1306,10 @@ int init_DRAM(int type, dram_param_t *para) {
     return 0;
   }
 
-  /* Get SDRAM size */
-  /* TODO: who ever puts a negative number in the top half? */
+  /* Get SDRAM size
+   * You can set dram_para2 to force set the dram size
+   * TODO: who ever puts a negative number in the top half?
+   */
   rc = para->dram_para2;
   if (rc & (1 << 31)) {
     rc = (rc >> 16) & ~(1 << 15);
@@ -1316,7 +1320,7 @@ int init_DRAM(int type, dram_param_t *para) {
   }
   mem_size_mb = rc;
 
-  /* Purpose ?? */
+  /* Enable hardware auto refresh */
   if (para->dram_tpr13 & (1 << 30)) {
     rc = para->dram_tpr8;
     if (rc == 0)
@@ -1330,7 +1334,7 @@ int init_DRAM(int type, dram_param_t *para) {
     clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PWRCTL), 0x1);
   }
 
-  /* Purpose ?? */
+  /* Set HDR/DDR dynamic */
   if (para->dram_tpr13 & (1 << 9)) {
     clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR0), 0xf000, 0x5000);
   } else {
@@ -1338,19 +1342,21 @@ int init_DRAM(int type, dram_param_t *para) {
       clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR0), 0xf000);
   }
 
+  /* Disable ZQ calibration */
   setbits_le32((MCTL_PHY_BASE + MCTL_PHY_ZQCR), (1 << 31));
 
-  /* CHECK: is that really writing to a different register? */
+  /* Set VTF feature */
   if (para->dram_tpr13 & (1 << 8))
-    writel(readl((MCTL_PHY_BASE + MCTL_PHY_ZQCR)) | 0x300,
+    writel(readl((MCTL_PHY_BASE + MCTL_PHY_VTFCR)) | 0x300,
            (MCTL_PHY_BASE + MCTL_PHY_VTFCR));
 
+  /* Set PAD Hold */
   if (para->dram_tpr13 & (1 << 16))
     clrbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR2), (1 << 13));
   else
     setbits_le32((MCTL_PHY_BASE + MCTL_PHY_PGCR2), (1 << 13));
 
-  /* Purpose ?? */
+  /* Set LPDDR3 ODT delay */
   if (para->dram_type == SUNXI_DRAM_TYPE_LPDDR3)
     clrsetbits_le32((MCTL_PHY_BASE + MCTL_PHY_ODTCFG), 0xf0000, 0x1000);
 
