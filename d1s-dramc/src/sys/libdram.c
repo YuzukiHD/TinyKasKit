@@ -943,43 +943,39 @@ static unsigned int DRAMC_get_dram_size(void) {
  * or both. Set bit 12 and 0 in dram_para2 with the results.
  */
 static int dqs_gate_detect(dram_param_t *para) {
-  uint32_t dx0, dx1;
+  uint32_t dx1, dx2;
 
-  if ((readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & (1 << 22)) == 0) {
-    para->dram_para2 = (para->dram_para2 & ~0xf) | (1 << 12);
-    sys_uart_printf("dual rank and full DQ\r\n");
+  if (readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & (1 << 22)) {
+    dx1 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(0)) << 6) >> 0x1e;
+    dx2 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(0)) << 6) >> 0x1e;
 
-    return 1;
-  }
-
-  dx0 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(0)) & 0x3000000) >> 24;
-  if (dx0 == 0) {
-    para->dram_para2 = (para->dram_para2 & ~0xf) | 0x1001;
-    sys_uart_printf("dual rank and half DQ\r\n");
-
-    return 1;
-  }
-
-  if (dx0 == 2) {
-    dx1 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(1)) & 0x3000000) >> 24;
     if (dx1 == 2) {
-      para->dram_para2 = para->dram_para2 & ~0xf00f;
-      sys_uart_printf("single rank and full DQ\r\n");
+      dx1 = para->dram_para2 & 0xffff0ff0;
+
+      if (dx2 == 2) {
+        para->dram_para2 = dx1;
+        sys_uart_printf("single rank and full DQ!\r\n");
+      } else {
+        para->dram_para2 = dx1 | 1;
+        sys_uart_printf("single rank and half DQ!\r\n");
+      }
     } else {
-      para->dram_para2 = (para->dram_para2 & ~0xf00f) | (1 << 0);
-      sys_uart_printf("single rank and half DQ\r\n");
+      if (dx1 != 0) {
+        if ((para->dram_tpr13 & 0x20000000) == 0) {
+          return 0;
+        }
+        sys_uart_printf("DX0 state: %d\r\n", dx1);
+        sys_uart_printf("DX1 state: %d\r\n", dx2);
+        return 0;
+      }
+      para->dram_para2 = (para->dram_para2 & 0xfffffff0) | 0x1001;
+      sys_uart_printf("dual rank and half DQ!\r\n");
     }
-
-    return 1;
+  } else {
+    para->dram_para2 = (para->dram_para2 & 0xfffffff0) | 0x1000;
+    sys_uart_printf("two rank and full DQ!\r\n");
   }
-
-  if ((para->dram_tpr13 & (1 << 29)) == 0)
-    return 0;
-
-  sys_uart_printf("DX0 state: %d\r\n", dx0);
-  sys_uart_printf("DX1 state: %d\r\n", dx1);
-
-  return 0;
+  return 1;
 }
 
 static int dramc_simple_wr_test(unsigned int mem_mb, int len) {

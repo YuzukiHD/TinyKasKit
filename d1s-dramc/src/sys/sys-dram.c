@@ -43,5 +43,4 @@ void sys_dram_init() {
   sys_uart_printf("DRAM ZQ      -> %x\r\n", param.dram_zq);
   sys_uart_printf("Start Init DRAM...\r\n");
   init_DRAM(0, &param);
-  //dram_vol_set(param);
 }
