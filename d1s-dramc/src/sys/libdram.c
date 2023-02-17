@@ -531,13 +531,15 @@ static void mctl_sys_init(dram_param_t *para) {
   clrbits_le32((D1S_CCU_BASE + CCU_MBUS_CLK_REG), (1 << 30));
 
   // turn off sdram clock gate, assert sdram reset
-  clrbits_le32((D1S_CCU_BASE + CCU_DRAM_BGR_REG), 0x10001);
+  clrbits_le32((D1S_CCU_BASE + CCU_DRAM_BGR_REG), (1 << 16));
   clrsetbits_le32((D1S_CCU_BASE + CCU_DRAM_CLK_REG), (1 << 31) | (1 << 30),
                   (1 << 27));
   udelay(10);
 
   // set ddr pll clock
   para->dram_clk = ccu_set_pll_ddr_clk(0, para) / 2;
+  sys_uart_printf("DDR CLK = %d MHz\r\n", para->dram_clk * 2);
+
   udelay(100);
   dram_disable_all_master();
 
@@ -641,22 +643,39 @@ static void mctl_com_init(dram_param_t *para) {
   }
 }
 
-static const uint8_t ac_remapping_tables[][22] = {
-    [0] = {0},
-    [1] = {1, 9,  3,  7, 8, 18, 4,  13, 5,  6,  10,
-           2, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22},
-    [2] = {4, 9,  3,  7, 8, 18, 1,  13, 2,  6,  10,
-           5, 14, 12, 0, 0, 21, 17, 20, 19, 11, 22},
-    [3] = {1, 7, 8, 12, 10, 18, 4,  13, 5,  6,  3,
-           2, 9, 0, 0,  0,  21, 17, 20, 19, 11, 22},
-    [4] = {4, 12, 10, 7, 8, 18, 1,  13, 2,  6,  3,
-           5, 9,  0,  0, 0, 21, 17, 20, 19, 11, 22},
-    [5] = {13, 2,  7, 9, 12, 19, 5,  1,  6,  3,  4,
-           8,  10, 0, 0, 0,  21, 22, 18, 17, 11, 20},
-    [6] = {3, 10, 7, 13, 9, 11, 1, 2, 4,  6,  8,
-           5, 12, 0, 0,  0, 20, 1, 0, 21, 22, 17},
-    [7] = {3, 2,  4, 7,  9, 1,  17, 12, 18, 14, 13,
-           8, 15, 6, 10, 5, 19, 22, 16, 21, 20, 11},
+static const uint8_t
+    ac_remapping_tables[][22] =
+        {
+            [0] = {0},
+            /* FPGA Verify DDR REMAP */
+            [1] = {0x1,  0x9,  0x3,  0x7,  0x8, 0x12, 0x4, 0xD,
+                   0x5,  0x6,  0xA,  0x2,  0xE, 0xC,  0x0, 0x0,
+                   0x15, 0x11, 0x14, 0x13, 0xB, 0x16}, // Generic DDR3 Type1
+            [2] = {0x4,  0x9,  0x3,  0x7,  0x8, 0x12, 0x1, 0xD,
+                   0x2,  0x6,  0xA,  0x5,  0xE, 0xC,  0x0, 0x0,
+                   0x15, 0x11, 0x14, 0x13, 0xB, 0x16}, // Generic DDR3 Type C
+            [3] = {0x1,  0x7,  0x8,  0xC,  0xA, 0x12, 0x4, 0xD,
+                   0x5,  0x6,  0x3,  0x2,  0x9, 0x0,  0x0, 0x0,
+                   0x15, 0x11, 0x14, 0x13, 0xB, 0x16}, // Generic DDR3 Type 8
+            [4] = {0x4,  0xC,  0xA,  0x7,  0x8, 0x12, 0x1, 0xD,
+                   0x2,  0x6,  0x3,  0x5,  0x9, 0x0,  0x0, 0x0,
+                   0x15, 0x11, 0x14, 0x13, 0xB, 0x16}, // Generic DDR3 Type 9
+            [5] = {0xD,  0x2,  0x7,  0x9,  0xC, 0x13, 0x5, 0x1,
+                   0x6,  0x3,  0x4,  0x8,  0xA, 0x0,  0x0, 0x0,
+                   0x15, 0x16, 0x12, 0x11, 0xB, 0x14}, // Generic DDR3 Type bf
+            /* ASIC Chip */
+            [6] = {0x3,  0xA,  0x7, 0xD,  0x9,  0xB, 0x1, 0x2,
+                   0x4,  0x6,  0x8, 0x5,  0xC,  0x0, 0x0, 0x0,
+                   0x14, 0x12, 0x0, 0x15, 0x16, 0x11}, // DDR2
+            [7] = {0x3,  0x2,  0x4,  0x7,  0x9,  0x1, 0x11, 0xC,
+                   0x12, 0xE,  0xD,  0x8,  0xF,  0x6, 0xA,  0x5,
+                   0x13, 0x16, 0x10, 0x15, 0x14, 0xB}, // DDR3 D1-H
+            [8] = {0x2,  0x13, 0x8,  0x6, 0xE, 0x5, 0x14, 0xA,
+                   0x3,  0x12, 0xD,  0xB, 0x7, 0xF, 0x9,  0x1,
+                   0x16, 0x15, 0x11, 0xC, 0x4, 0x10}, // DDR3 H133
+            [9] = {0x1,  0x2,  0xD, 0x8,  0xF, 0xC, 0x13, 0xA,
+                   0x3,  0x15, 0x6, 0x11, 0x9, 0xE, 0x5,  0x10,
+                   0x14, 0x16, 0xB, 0x7,  0x4, 0x12}, // DDR2 H133
 };
 
 /*
@@ -682,6 +701,7 @@ static void mctl_phy_ac_remapping(dram_param_t *para) {
   if (para->dram_type == SUNXI_DRAM_TYPE_DDR2) {
     if (fuse == 15)
       return;
+    sys_uart_printf("DDR Using MAP: 6 \r\n");
     cfg = ac_remapping_tables[6];
   } else {
     if (para->dram_tpr13 & 0xc0000) {
@@ -689,24 +709,24 @@ static void mctl_phy_ac_remapping(dram_param_t *para) {
     } else {
       switch (fuse) {
       case 8:
-        cfg = ac_remapping_tables[2];
-        break;
-      case 9:
         cfg = ac_remapping_tables[3];
         break;
+      case 9:
+        cfg = ac_remapping_tables[4];
+        break;
       case 10:
-        cfg = ac_remapping_tables[5];
+        cfg = ac_remapping_tables[1];
         break;
       case 11:
-        cfg = ac_remapping_tables[4];
+        cfg = ac_remapping_tables[5];
         break;
       default:
       case 12:
-        cfg = ac_remapping_tables[1];
+        cfg = ac_remapping_tables[2];
         break;
       case 13:
       case 14:
-        cfg = ac_remapping_tables[0];
+        cfg = ac_remapping_tables[6];
         break;
       }
     }
