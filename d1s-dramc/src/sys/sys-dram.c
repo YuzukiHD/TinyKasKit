@@ -1032,14 +1032,14 @@ static int dramc_simple_wr_test(unsigned int mem_mb, int len) {
     v2 = patt1 + i;
     if (v1 != v2) {
       sys_uart_printf("DRAM: simple test FAIL\r\n");
-      sys_uart_printf("%x != %x at address %p\r\n", v1, v2, addr + i);
+      sys_uart_printf("%x != %x at address %x\r\n", v1, v2, addr + i);
       return 1;
     }
     v1 = readl((unsigned long)(addr + offs + i));
     v2 = patt2 + i;
     if (v1 != v2) {
       sys_uart_printf("DRAM: simple test FAIL\r\n");
-      sys_uart_printf("%x != %x at address %p\r\n", v1, v2, addr + offs + i);
+      sys_uart_printf("%x != %x at address %x\r\n", v1, v2, addr + offs + i);
       return 1;
     }
   }
