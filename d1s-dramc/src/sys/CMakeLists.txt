@@ -1,6 +1,6 @@
 add_library(libsys
     sys-clock.c
-    sys-dram.c 
+    sys-dram.c
     sys-uart.c
 )
 

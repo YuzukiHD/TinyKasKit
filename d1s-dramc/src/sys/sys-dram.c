@@ -646,7 +646,8 @@ static void mctl_com_init(dram_param_t *para) {
 static const uint8_t
     ac_remapping_tables[][22] =
         {
-            [0] = {0},
+            [0] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
             /* FPGA Verify DDR REMAP */
             [1] = {0x1,  0x9,  0x3,  0x7,  0x8, 0x12, 0x4, 0xD,
                    0x5,  0x6,  0xA,  0x2,  0xE, 0xC,  0x0, 0x0,
@@ -699,58 +700,72 @@ static void mctl_phy_ac_remapping(dram_param_t *para) {
   sys_uart_printf("DDR efuse: 0x%x\r\n", fuse);
 
   if (para->dram_type == SUNXI_DRAM_TYPE_DDR2) {
+    /* if fuse is 0xa then D1s -> no remap*/
+    if (fuse == 0x0a) {
+      sys_uart_printf("D1s no REMAP!!\r\n");
+      return;
+    }
     if (fuse == 15)
       return;
     sys_uart_printf("DDR Using MAP: 6 \r\n");
     cfg = ac_remapping_tables[6];
   } else {
     if (para->dram_tpr13 & 0xc0000) {
+      sys_uart_printf("DDR Using MAP: 7 \r\n");
       cfg = ac_remapping_tables[7];
     } else {
       switch (fuse) {
       case 8:
+        sys_uart_printf("DDR Using MAP: 3 \r\n");
         cfg = ac_remapping_tables[3];
         break;
       case 9:
+        sys_uart_printf("DDR Using MAP: 4 \r\n");
         cfg = ac_remapping_tables[4];
         break;
       case 10:
+        sys_uart_printf("DDR Using MAP: 1 \r\n");
         cfg = ac_remapping_tables[1];
         break;
       case 11:
+        sys_uart_printf("DDR Using MAP: 5 \r\n");
         cfg = ac_remapping_tables[5];
         break;
       default:
       case 12:
+        sys_uart_printf("DDR Using MAP: 2 \r\n");
         cfg = ac_remapping_tables[2];
         break;
       case 13:
       case 14:
+        sys_uart_printf("DDR Using MAP: 6 \r\n");
         cfg = ac_remapping_tables[6];
         break;
       }
     }
   }
 
-  val = (cfg[4] << 25) | (cfg[3] << 20) | (cfg[2] << 15) | (cfg[1] << 10) |
-        (cfg[0] << 5);
+  val = (cfg[1] << 10) | (32 * cfg[0]) | 1 | (cfg[2] << 15) | (cfg[3] << 20) |
+        (cfg[4] << 25);
   writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP0));
-
-  val = (cfg[10] << 25) | (cfg[9] << 20) | (cfg[8] << 15) | (cfg[7] << 10) |
-        (cfg[6] << 5) | cfg[5];
+  val = (cfg[7] << 10) | (32 * cfg[6]) | cfg[5] | (cfg[8] << 15) |
+        (cfg[9] << 20) | (cfg[10] << 25);
   writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP1));
-
-  val = (cfg[15] << 20) | (cfg[14] << 15) | (cfg[13] << 10) | (cfg[12] << 5) |
-        cfg[11];
+  val = (cfg[13] << 10) | (32 * cfg[12]) | cfg[11] | (cfg[14] << 15) |
+        (cfg[15] << 20);
   writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP2));
-
-  val = (cfg[21] << 25) | (cfg[20] << 20) | (cfg[19] << 15) | (cfg[18] << 10) |
-        (cfg[17] << 5) | cfg[16];
+  val = (cfg[18] << 10) | (32 * cfg[17]) | cfg[16] | (cfg[19] << 15) |
+        (cfg[20] << 20) | (cfg[21] << 25);
   writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP3));
 
-  val = (cfg[4] << 25) | (cfg[3] << 20) | (cfg[2] << 15) | (cfg[1] << 10) |
-        (cfg[0] << 5) | 1;
-  writel(val, (MCTL_COM_BASE + MCTL_COM_REMAP0));
+  sys_uart_printf("MCTL_COM_REMAP0 = 0x%x\r\n",
+                  readl((MCTL_COM_BASE + MCTL_COM_REMAP0)));
+  sys_uart_printf("MCTL_COM_REMAP1 = 0x%x\r\n",
+                  readl((MCTL_COM_BASE + MCTL_COM_REMAP1)));
+  sys_uart_printf("MCTL_COM_REMAP2 = 0x%x\r\n",
+                  readl((MCTL_COM_BASE + MCTL_COM_REMAP2)));
+  sys_uart_printf("MCTL_COM_REMAP3 = 0x%x\r\n",
+                  readl((MCTL_COM_BASE + MCTL_COM_REMAP3)));
 }
 
 // Init the controller channel. The key part is placing commands in the main
@@ -968,7 +983,7 @@ static int dqs_gate_detect(dram_param_t *para) {
 
   if (readl((MCTL_PHY_BASE + MCTL_PHY_PGSR0)) & (1 << 22)) {
     dx1 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(0)) << 6) >> 0x1e;
-    dx2 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(0)) << 6) >> 0x1e;
+    dx2 = (readl(MCTL_PHY_BASE + MCTL_PHY_DXnGSR0(1)) << 6) >> 0x1e;
 
     if (dx1 == 2) {
       dx1 = para->dram_para2 & 0xffff0ff0;
@@ -1422,4 +1437,3 @@ void sys_dram_init() {
   sys_uart_printf("Start Init DRAM...\r\n");
   init_DRAM(0, &param);
 }
-
