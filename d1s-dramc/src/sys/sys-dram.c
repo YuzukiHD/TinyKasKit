@@ -4,7 +4,7 @@
  *
  * Copyright (C) 2022 Samuel Holland <samuel@sholland.org>
  * Copyright (C) 2023 YuzukiTsuru <gloomyghost@gloomyghost.com>
- * 
+ *
  * As usual there is no documentation for the memory controller or PHY IP
  * used here. The baseline of this code was lifted from awboot[1], which
  * seems to be based on some form of de-compilation of some original Allwinner
@@ -746,30 +746,30 @@ static void mctl_phy_ac_remapping(dram_param_t *para) {
     } else {
       switch (fuse) {
       case 8:
-        sys_uart_printf("DDR Using MAP: 3 \r\n");
-        cfg = ac_remapping_tables[3];
+        debug("DDR Using MAP: 2 \r\n");
+        cfg = ac_remapping_tables[2];
         break;
       case 9:
-        sys_uart_printf("DDR Using MAP: 4 \r\n");
-        cfg = ac_remapping_tables[4];
+        debug("DDR Using MAP: 3 \r\n");
+        cfg = ac_remapping_tables[3];
         break;
       case 10:
-        sys_uart_printf("DDR Using MAP: 1 \r\n");
-        cfg = ac_remapping_tables[1];
+        debug("DDR Using MAP: 5 \r\n");
+        cfg = ac_remapping_tables[5];
         break;
       case 11:
-        sys_uart_printf("DDR Using MAP: 5 \r\n");
-        cfg = ac_remapping_tables[5];
+        debug("DDR Using MAP: 4 \r\n");
+        cfg = ac_remapping_tables[4];
         break;
       default:
       case 12:
-        sys_uart_printf("DDR Using MAP: 2 \r\n");
-        cfg = ac_remapping_tables[2];
+        debug("DDR Using MAP: 1 \r\n");
+        cfg = ac_remapping_tables[1];
         break;
       case 13:
       case 14:
-        sys_uart_printf("DDR Using MAP: 6 \r\n");
-        cfg = ac_remapping_tables[6];
+        debug("DDR Using MAP: 0 \r\n");
+        cfg = ac_remapping_tables[0];
         break;
       }
     }
