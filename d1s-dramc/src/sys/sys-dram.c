@@ -676,9 +676,10 @@ static void mctl_com_init(dram_param_t *para) {
 static const uint8_t
     ac_remapping_tables[][22] =
         {
+            /* No Remap */
             [0] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-            /* FPGA Verify DDR REMAP */
+            /* ASIC Chip */
             [1] = {0x1,  0x9,  0x3,  0x7,  0x8, 0x12, 0x4, 0xD,
                    0x5,  0x6,  0xA,  0x2,  0xE, 0xC,  0x0, 0x0,
                    0x15, 0x11, 0x14, 0x13, 0xB, 0x16}, // Generic DDR3 Type1
@@ -693,8 +694,7 @@ static const uint8_t
                    0x15, 0x11, 0x14, 0x13, 0xB, 0x16}, // Generic DDR3 Type 9
             [5] = {0xD,  0x2,  0x7,  0x9,  0xC, 0x13, 0x5, 0x1,
                    0x6,  0x3,  0x4,  0x8,  0xA, 0x0,  0x0, 0x0,
-                   0x15, 0x16, 0x12, 0x11, 0xB, 0x14}, // Generic DDR3 Type bf
-            /* ASIC Chip */
+                   0x15, 0x16, 0x12, 0x11, 0xB, 0x14}, // DDR3 Type bf (T113)
             [6] = {0x3,  0xA,  0x7, 0xD,  0x9,  0xB, 0x1, 0x2,
                    0x4,  0x6,  0x8, 0x5,  0xC,  0x0, 0x0, 0x0,
                    0x14, 0x12, 0x0, 0x15, 0x16, 0x11}, // DDR2
@@ -719,8 +719,7 @@ static void mctl_phy_ac_remapping(dram_param_t *para) {
   uint32_t fuse, val;
 
   /*
-   * It is unclear whether the LPDDRx types don't need any remapping,
-   * or whether the original code just didn't provide tables.
+   * Only DDR2 and DDR3 Support Remap
    */
   if (para->dram_type != SUNXI_DRAM_TYPE_DDR2 &&
       para->dram_type != SUNXI_DRAM_TYPE_DDR3)
